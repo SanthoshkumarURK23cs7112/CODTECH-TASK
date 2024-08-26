@@ -1,0 +1,144 @@
+import java.util.ArrayList;
+import java.util.Scanner;
+
+class Student {
+    private String name;
+    private ArrayList<Double> grades;
+
+    // Constructor
+    public Student(String name) {
+        this.name = name;
+        this.grades = new ArrayList<>();
+    }
+
+    // Method to add a grade
+    public void addGrade(double grade) {
+        grades.add(grade);
+    }
+
+    // Method to calculate average grade
+    public double calculateAverageGrade() {
+        double sum = 0;
+        for (double grade : grades) {
+            sum += grade;
+        }
+        return grades.size() == 0 ? 0 : sum / grades.size();
+    }
+
+    // Method to calculate letter grade based on average grade
+    public String calculateLetterGrade(double averageGrade) {
+        if (averageGrade >= 90) {
+            return "A";
+        } else if (averageGrade >= 80) {
+            return "B";
+        } else if (averageGrade >= 70) {
+            return "C";
+        } else if (averageGrade >= 60) {
+            return "D";
+        } else {
+            return "F";
+        }
+    }
+
+    // Method to calculate GPA based on average grade
+    public double calculateGPA(double averageGrade) {
+        if (averageGrade >= 90) {
+            return 4.0;
+        } else if (averageGrade >= 80) {
+            return 3.0;
+        } else if (averageGrade >= 70) {
+            return 2.0;
+        } else if (averageGrade >= 60) {
+            return 1.0;
+        } else {
+            return 0.0;
+        }
+    }
+
+    // Method to display the student's grade report
+    public void displayGradeReport() {
+        double averageGrade = calculateAverageGrade();
+        String letterGrade = calculateLetterGrade(averageGrade);
+        double gpa = calculateGPA(averageGrade);
+
+        System.out.println("\nGrade Report for " + name);
+        System.out.printf("Average Grade: %.2f\n", averageGrade);
+        System.out.println("Letter Grade: " + letterGrade);
+        System.out.printf("GPA: %.2f\n", gpa);
+    }
+}
+
+public class StudentGradeTracker {
+    private ArrayList<Student> students;
+    private Scanner scanner;
+
+    // Constructor
+    public StudentGradeTracker() {
+        students = new ArrayList<>();
+        scanner = new Scanner(System.in);
+    }
+
+    // Method to add a student
+    public void addStudent() {
+        System.out.print("Enter student's name: ");
+        String name = scanner.nextLine();
+        students.add(new Student(name));
+    }
+
+    // Method to input grades for a student
+    public void inputGrades(Student student) {
+        System.out.print("Enter the number of grades for " + student + ": ");
+        int numberOfGrades = inputPositiveInteger();
+
+        for (int i = 0; i < numberOfGrades; i++) {
+            System.out.print("Enter grade " + (i + 1) + ": ");
+            double grade = inputValidGrade();
+            student.addGrade(grade);
+        }
+    }
+
+    // Method to input a valid grade between 0 and 100
+    private double inputValidGrade() {
+        while (true) {
+            double grade = scanner.nextDouble();
+            if (grade >= 0 && grade <= 100) {
+                return grade;
+            } else {
+                System.out.print("Invalid grade. Please enter a grade between 0 and 100: ");
+            }
+        }
+    }
+
+    // Method to input a positive integer
+    private int inputPositiveInteger() {
+        while (true) {
+            int value = scanner.nextInt();
+            if (value > 0) {
+                return value;
+            } else {
+                System.out.print("Invalid number. Please enter a positive integer: ");
+            }
+        }
+    }
+
+    // Method to run the grade tracker
+    public void run() {
+        System.out.print("Enter the number of students: ");
+        int numberOfStudents = inputPositiveInteger();
+        scanner.nextLine(); // Consume newline
+
+        for (int i = 0; i < numberOfStudents; i++) {
+            addStudent();
+        }
+
+        for (Student student : students) {
+            inputGrades(student);
+            student.displayGradeReport();
+        }
+    }
+
+    public static void main(String[] args) {
+        StudentGradeTracker tracker = new StudentGradeTracker();
+        tracker.run();
+    }
+}
