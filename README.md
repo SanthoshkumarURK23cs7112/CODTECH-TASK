@@ -33,3 +33,6 @@ The objective of this project is to develop a Java program that efficiently trac
 - **Programming Language:** Java  
 - **Development Tools:** IntelliJ IDEA, Eclipse, or any other Java IDE  
 - **Version Control:** Git
+
+## OUTPUT
+![image](https://github.com/user-attachments/assets/b56a275e-031c-4c36-8f6f-821d36b3a72a)
