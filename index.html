@@ -1,0 +1,421 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Data Backup – UI</title>
+    <meta name="color-scheme" content="light dark" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            fontFamily: { sans: ['Inter', 'ui-sans-serif', 'system-ui'] },
+            colors: {
+              brand: {
+                50: '#eef6ff',
+                100: '#ddeefe',
+                200: '#b9dcfd',
+                300: '#92c8fb',
+                400: '#64aef7',
+                500: '#3b8ef2',
+                600: '#2b73da',
+                700: '#255db3',
+                800: '#234f8f',
+                900: '#1f4274'
+              }
+            },
+            boxShadow: {
+              soft: '0 1px 2px rgba(16, 24, 40, 0.06), 0 1px 3px rgba(16, 24, 40, 0.10)'
+            }
+          }
+        }
+      }
+    </script>
+    <style>
+      /* Smooth, subtle scrollbars */
+      * {
+        scrollbar-width: thin;
+        scrollbar-color: #cbd5e1 transparent;
+      }
+      ::-webkit-scrollbar {
+        height: 10px;
+        width: 10px;
+      }
+      ::-webkit-scrollbar-thumb {
+        background: #cbd5e1;
+        border-radius: 9999px;
+      }
+      .backdrop-blur-safe { backdrop-filter: blur(8px); }
+    </style>
+  </head>
+  <body class="bg-slate-50 text-slate-900 antialiased">
+    <div class="flex h-dvh min-h-screen">
+      <!-- Sidebar -->
+      <aside id="sidebar" class="hidden lg:flex w-72 flex-col border-r border-slate-200 bg-white/90 backdrop-blur-safe">
+        <div class="flex items-center gap-2 px-6 h-16 border-b border-slate-200">
+          <div class="h-9 w-9 rounded-lg bg-brand-600 flex items-center justify-center text-white font-bold">DB</div>
+          <div>
+            <div class="text-slate-900 font-semibold leading-tight">Data Backup</div>
+            <div class="text-slate-500 text-xs">Secure Sync & Restore</div>
+          </div>
+        </div>
+        <nav class="flex-1 overflow-y-auto p-3">
+          <ul class="space-y-1">
+            <li><button data-section="dashboard" class="nav-item active w-full flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-slate-100 text-slate-700"> 
+              <span class="inline-flex h-5 w-5 items-center justify-center">🏠</span> Dashboard
+            </button></li>
+            <li><button data-section="upload" class="nav-item w-full flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-slate-100 text-slate-700">
+              <span class="inline-flex h-5 w-5 items-center justify-center">⤴️</span> Upload
+            </button></li>
+            <li><button data-section="history" class="nav-item w-full flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-slate-100 text-slate-700">
+              <span class="inline-flex h-5 w-5 items-center justify-center">🕘</span> History & Restore
+            </button></li>
+            <li><button data-section="settings" class="nav-item w-full flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-slate-100 text-slate-700">
+              <span class="inline-flex h-5 w-5 items-center justify-center">⚙️</span> Settings
+            </button></li>
+            <li><button data-section="trash" class="nav-item w-full flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-slate-100 text-slate-700">
+              <span class="inline-flex h-5 w-5 items-center justify-center">🗑️</span> Trash
+            </button></li>
+          </ul>
+        </nav>
+        <div class="p-4 border-t border-slate-200">
+          <div class="rounded-xl bg-slate-50 p-3 text-xs text-slate-600">
+            <div class="font-medium text-slate-800 mb-1">Plan: Free</div>
+            5 GB included. Need more?
+            <button id="cta-upgrade-sidebar" class="mt-2 inline-flex items-center justify-center rounded-lg bg-brand-600 px-3 py-1.5 text-white hover:bg-brand-700 shadow-soft">Upgrade</button>
+          </div>
+        </div>
+      </aside>
+
+      <!-- Main content -->
+      <div class="flex-1 flex flex-col min-w-0">
+        <!-- Mobile top bar -->
+        <div class="lg:hidden sticky top-0 z-20 border-b border-slate-200 bg-white/80 backdrop-blur-safe">
+          <div class="flex items-center gap-3 px-4 h-14">
+            <button id="btn-open-sidebar" class="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-slate-200 hover:bg-slate-50">☰</button>
+            <div class="font-semibold">Data Backup</div>
+            <div class="ml-auto text-xs text-slate-500">Secure Sync & Restore</div>
+          </div>
+        </div>
+
+        <!-- Header -->
+        <header class="hidden lg:flex items-center gap-3 px-6 h-16 border-b border-slate-200 bg-white/70 backdrop-blur-safe">
+          <div class="text-lg font-semibold" id="section-title">Dashboard</div>
+          <div class="ml-auto flex items-center gap-3">
+            <div class="relative">
+              <input type="search" placeholder="Search backups, files…" class="peer w-72 rounded-lg border border-slate-200 bg-white px-3 py-2 pl-9 text-sm outline-none ring-0 focus:border-brand-500" />
+              <span class="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">🔎</span>
+            </div>
+            <button id="btn-backup-now-top" class="inline-flex items-center gap-2 rounded-lg bg-brand-600 px-3 py-2 text-white hover:bg-brand-700 shadow-soft">
+              <span>⬆️</span> Backup Now
+            </button>
+          </div>
+        </header>
+
+        <!-- Content -->
+        <main class="flex-1 overflow-y-auto">
+          <div class="mx-auto w-full max-w-7xl p-4 sm:p-6">
+
+            <!-- Dashboard -->
+            <section id="section-dashboard" class="space-y-6">
+              <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
+                <div class="rounded-2xl border border-slate-200 bg-white p-5 shadow-soft">
+                  <div class="flex items-start justify-between">
+                    <div>
+                      <div class="text-sm text-slate-500">Storage Used</div>
+                      <div class="text-2xl font-semibold mt-1"><span id="used-gb">1.2</span> GB / <span id="limit-gb">5</span> GB</div>
+                    </div>
+                    <div class="text-xs rounded-full bg-brand-50 text-brand-700 px-2 py-1">Free Plan</div>
+                  </div>
+                  <div class="mt-4">
+                    <div class="h-2 w-full rounded-full bg-slate-100 overflow-hidden">
+                      <div id="usage-bar" class="h-2 rounded-full bg-brand-600 transition-[width] duration-500" style="width: 24%"></div>
+                    </div>
+                    <div class="mt-2 text-xs text-slate-500">Your backups are encrypted in transit and at rest.</div>
+                  </div>
+                </div>
+
+                <div class="rounded-2xl border border-slate-200 bg-white p-5 shadow-soft">
+                  <div class="text-sm text-slate-500">Last Backup</div>
+                  <div class="mt-1 flex items-center gap-2">
+                    <div class="h-2.5 w-2.5 rounded-full bg-emerald-500 animate-pulse"></div>
+                    <div id="last-backup-text" class="font-medium">Last Backup: 2 hours ago</div>
+                  </div>
+                  <div class="mt-3 flex items-center gap-2 text-xs">
+                    <span id="status-badge" class="inline-flex items-center rounded-full bg-emerald-50 px-2 py-1 text-emerald-700">Active</span>
+                    <span class="text-slate-400">•</span>
+                    <span class="text-slate-500">All files secured</span>
+                  </div>
+                </div>
+
+                <div class="rounded-2xl border border-slate-200 bg-white p-5 shadow-soft">
+                  <div class="text-sm text-slate-500">Quick Actions</div>
+                  <div class="mt-3 grid grid-cols-2 gap-3">
+                    <button id="btn-backup-now" class="rounded-xl bg-brand-600 px-3 py-2 text-white hover:bg-brand-700">Backup Now</button>
+                    <button id="btn-restore-all" class="rounded-xl border border-slate-200 bg-white px-3 py-2 hover:bg-slate-50">One-Click Restore</button>
+                    <button id="btn-upgrade" class="col-span-2 rounded-xl border border-brand-200 bg-brand-50 px-3 py-2 text-brand-700 hover:bg-brand-100">Upgrade Plan</button>
+                  </div>
+                </div>
+
+                <div class="rounded-2xl border border-slate-200 bg-white p-5 shadow-soft">
+                  <div class="text-sm text-slate-500 mb-3">Recent Activity</div>
+                  <div id="activity-feed" class="space-y-2 text-sm">
+                    <div class="flex items-center justify-between">
+                      <div class="truncate">Completed backup “Photos 2024”</div>
+                      <div class="text-xs text-slate-500">10m ago</div>
+                    </div>
+                    <div class="flex items-center justify-between">
+                      <div class="truncate">Synced 3 files</div>
+                      <div class="text-xs text-slate-500">1h ago</div>
+                    </div>
+                    <div class="flex items-center justify-between">
+                      <div class="truncate">Device “Pixel 8” connected</div>
+                      <div class="text-xs text-slate-500">1d ago</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </section>
+
+            <!-- Upload -->
+            <section id="section-upload" class="hidden space-y-6">
+              <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <div class="rounded-2xl border border-dashed border-slate-300 bg-white p-6 shadow-soft">
+                  <div class="flex flex-col items-center justify-center text-center p-6">
+                    <div class="text-5xl">📦</div>
+                    <h3 class="mt-3 text-lg font-semibold">Upload files or folders</h3>
+                    <p class="mt-1 text-sm text-slate-500">Drag and drop here, or choose from your device. On desktop, you can select entire folders.</p>
+                    <div class="mt-5 grid grid-cols-1 sm:grid-cols-2 gap-3 w-full max-w-md">
+                      <label class="inline-flex cursor-pointer items-center justify-center rounded-xl border border-slate-200 bg-white px-4 py-2 hover:bg-slate-50">
+                        <input id="file-input" type="file" class="hidden" multiple />
+                        <span>Choose Files</span>
+                      </label>
+                      <label class="inline-flex cursor-pointer items-center justify-center rounded-xl border border-slate-200 bg-white px-4 py-2 hover:bg-slate-50">
+                        <input id="folder-input" type="file" class="hidden" webkitdirectory directory />
+                        <span>Choose Folder</span>
+                      </label>
+                    </div>
+                  </div>
+                  <div id="drop-zone" class="mt-4 rounded-xl bg-slate-50 p-6 text-center text-slate-500">Drop files here…</div>
+                </div>
+
+                <div class="rounded-2xl border border-slate-200 bg-white p-5 shadow-soft">
+                  <div class="flex items-center justify-between">
+                    <div class="text-sm text-slate-500">Upload Queue</div>
+                    <button id="btn-clear-queue" class="text-xs text-slate-500 hover:text-slate-700">Clear</button>
+                  </div>
+                  <div id="upload-queue" class="mt-3 space-y-3 max-h-[420px] overflow-y-auto"></div>
+                  <div class="mt-4">
+                    <div class="h-2 w-full rounded-full bg-slate-100 overflow-hidden">
+                      <div id="overall-upload-bar" class="h-2 rounded-full bg-brand-600 transition-[width] duration-300" style="width: 0%"></div>
+                    </div>
+                    <div id="overall-upload-meta" class="mt-2 text-xs text-slate-500">No uploads in progress</div>
+                    <div id="overall-upload-submeta" class="mt-1 text-xs text-slate-400"></div>
+                  </div>
+                </div>
+              </div>
+            </section>
+
+            <!-- History & Restore -->
+            <section id="section-history" class="hidden space-y-6">
+              <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <div class="lg:col-span-1 rounded-2xl border border-slate-200 bg-white p-4 shadow-soft">
+                  <div class="flex items-center justify-between">
+                    <div class="text-sm text-slate-500">Backups</div>
+                    <div class="text-xs text-slate-400">Chronological</div>
+                  </div>
+                  <div id="backup-list" class="mt-3 divide-y divide-slate-100 max-h-[520px] overflow-y-auto"></div>
+                </div>
+                <div class="lg:col-span-2 rounded-2xl border border-slate-200 bg-white p-4 shadow-soft">
+                  <div class="flex flex-wrap items-center gap-3">
+                    <div id="browser-title" class="font-medium">Browse: —</div>
+                    <div id="browser-breadcrumbs" class="text-sm text-slate-500">/</div>
+                    <div class="ml-auto flex items-center gap-2">
+                      <div class="hidden md:flex items-center gap-2">
+                        <label class="text-xs text-slate-500">Restore to</label>
+                        <select id="restore-location-select" class="rounded-lg border border-slate-200 px-2 py-1.5 text-xs">
+                          <option value="original">Original Location</option>
+                          <option value="new">New Location…</option>
+                        </select>
+                        <input id="restore-new-path" type="text" placeholder="/path/to/restore" class="hidden w-48 rounded-lg border border-slate-200 px-2 py-1.5 text-xs" />
+                      </div>
+                      <button id="btn-restore-selected" class="rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm hover:bg-slate-50">Restore Selected</button>
+                      <button id="btn-restore-all-2" class="rounded-lg bg-brand-600 px-3 py-2 text-sm text-white hover:bg-brand-700">Restore All</button>
+                    </div>
+                  </div>
+                  <div id="browser-grid" class="mt-3 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3 max-h-[480px] overflow-y-auto"></div>
+                  <div class="mt-4">
+                    <div class="h-2 w-full rounded-full bg-slate-100 overflow-hidden">
+                      <div id="restore-bar" class="h-2 rounded-full bg-emerald-600 transition-[width] duration-300" style="width: 0%"></div>
+                    </div>
+                    <div id="restore-meta" class="mt-2 text-xs text-slate-500">No restores in progress</div>
+                    <div id="restore-submeta" class="mt-1 text-xs text-slate-400"></div>
+                  </div>
+                </div>
+              </div>
+            </section>
+
+            <!-- Settings -->
+            <section id="section-settings" class="hidden space-y-6">
+              <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <div class="rounded-2xl border border-slate-200 bg-white p-5 shadow-soft">
+                  <div class="text-sm text-slate-500">Account Information</div>
+                  <form id="form-account" class="mt-3 space-y-3">
+                    <div>
+                      <label class="text-xs text-slate-500">Full Name</label>
+                      <input id="acct-name" type="text" class="mt-1 w-full rounded-lg border border-slate-200 px-3 py-2 text-sm focus:border-brand-500 outline-none" value="Alex Doe" />
+                    </div>
+                    <div>
+                      <label class="text-xs text-slate-500">Email</label>
+                      <input type="email" class="mt-1 w-full rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-sm" value="alex@example.com" readonly />
+                    </div>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                      <input id="acct-pass-1" type="password" placeholder="New password" class="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm" />
+                      <input id="acct-pass-2" type="password" placeholder="Confirm password" class="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm" />
+                    </div>
+                    <div class="flex items-center gap-3">
+                      <button class="rounded-lg bg-brand-600 px-3 py-2 text-white hover:bg-brand-700" type="submit">Save changes</button>
+                      <div id="acct-status" class="text-xs text-slate-500"></div>
+                    </div>
+                  </form>
+                </div>
+
+                <div class="rounded-2xl border border-slate-200 bg-white p-5 shadow-soft">
+                  <div class="text-sm text-slate-500">Backup Preferences</div>
+                  <div class="mt-3 space-y-3">
+                    <label class="flex items-center justify-between gap-3">
+                      <div>
+                        <div class="font-medium">Automatic Hourly Sync</div>
+                        <div class="text-xs text-slate-500">Toggle background sync on/off</div>
+                      </div>
+                      <input id="pref-auto" type="checkbox" class="h-5 w-10 appearance-none rounded-full bg-slate-200 checked:bg-brand-600 transition relative before:absolute before:left-0.5 before:top-0.5 before:h-4 before:w-4 before:rounded-full before:bg-white before:transition checked:before:translate-x-5" checked />
+                    </label>
+                    <div>
+                      <label class="text-xs text-slate-500">Sync Frequency</label>
+                      <select id="pref-frequency" class="mt-1 w-full rounded-lg border border-slate-200 px-3 py-2 text-sm">
+                        <option>Hourly</option>
+                        <option>Daily</option>
+                        <option>Weekly</option>
+                      </select>
+                    </div>
+                    <label class="flex items-center justify-between gap-3">
+                      <div>
+                        <div class="font-medium">Wi‑Fi only</div>
+                        <div class="text-xs text-slate-500">Avoid using mobile data</div>
+                      </div>
+                      <input id="pref-wifi" type="checkbox" class="h-5 w-10 appearance-none rounded-full bg-slate-200 checked:bg-brand-600 transition relative before:absolute before:left-0.5 before:top-0.5 before:h-4 before:w-4 before:rounded-full before:bg-white before:transition checked:before:translate-x-5" checked />
+                    </label>
+                    <div>
+                      <label class="text-xs text-slate-500">Pause sync below battery (%)</label>
+                      <input id="pref-battery" type="number" min="0" max="100" value="20" class="mt-1 w-32 rounded-lg border border-slate-200 px-3 py-2 text-sm" />
+                    </div>
+                  </div>
+                </div>
+
+                <div class="rounded-2xl border border-slate-200 bg-white p-5 shadow-soft">
+                  <div class="text-sm text-slate-500">Device Management</div>
+                  <div id="device-list" class="mt-3 space-y-3"></div>
+                </div>
+
+                <div class="rounded-2xl border border-slate-200 bg-white p-5 shadow-soft">
+                  <div class="text-sm text-slate-500">Notification Preferences</div>
+                  <div class="mt-3 space-y-3">
+                    <label class="flex items-center justify-between gap-3">
+                      <div>
+                        <div class="font-medium">Backup complete</div>
+                        <div class="text-xs text-slate-500">Show a success toast after backups</div>
+                      </div>
+                      <input id="notif-complete" type="checkbox" class="h-5 w-10 appearance-none rounded-full bg-slate-200 checked:bg-brand-600 transition relative before:absolute before:left-0.5 before:top-0.5 before:h-4 before:w-4 before:rounded-full before:bg-white before:transition checked:before:translate-x-5" checked />
+                    </label>
+                    <label class="flex items-center justify-between gap-3">
+                      <div>
+                        <div class="font-medium">Sync paused</div>
+                        <div class="text-xs text-slate-500">Alert when sync is paused</div>
+                      </div>
+                      <input id="notif-paused" type="checkbox" class="h-5 w-10 appearance-none rounded-full bg-slate-200 checked:bg-brand-600 transition relative before:absolute before:left-0.5 before:top-0.5 before:h-4 before:w-4 before:rounded-full before:bg-white before:transition checked:before:translate-x-5" />
+                    </label>
+                  </div>
+                </div>
+              </div>
+            </section>
+
+            <!-- Trash -->
+            <section id="section-trash" class="hidden space-y-6">
+              <div class="rounded-2xl border border-slate-200 bg-white p-4 shadow-soft">
+                <div class="rounded-xl bg-slate-50 px-4 py-3 text-slate-700 text-sm">
+                  Files in Trash are kept for 30 days. After that, they’ll be permanently deleted.
+                </div>
+                <div class="mt-4 flex flex-wrap items-center gap-3">
+                  <div class="relative">
+                    <input id="trash-search" type="search" placeholder="Search by name or extension" class="peer w-64 rounded-lg border border-slate-200 bg-white px-3 py-2 pl-9 text-sm outline-none focus:border-brand-500" />
+                    <span class="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">🔎</span>
+                  </div>
+                  <select id="trash-filter" class="rounded-lg border border-slate-200 px-3 py-2 text-sm">
+                    <option value="all">All types</option>
+                    <option value="doc">Documents</option>
+                    <option value="img">Images</option>
+                    <option value="vid">Videos</option>
+                    <option value="oth">Other</option>
+                  </select>
+                  <select id="trash-sort" class="rounded-lg border border-slate-200 px-3 py-2 text-sm">
+                    <option value="deleted">Sort: Date Deleted</option>
+                    <option value="expiry">Sort: Expiry Date</option>
+                  </select>
+                  <div class="ml-auto flex items-center gap-2">
+                    <button id="trash-restore-selected" class="rounded-lg bg-brand-600 px-3 py-2 text-sm text-white hover:bg-brand-700">Restore Selected</button>
+                  </div>
+                </div>
+                <div class="mt-4 overflow-hidden rounded-xl border border-slate-200">
+                  <table class="min-w-full text-sm">
+                    <thead class="bg-slate-50">
+                      <tr class="text-left text-slate-600">
+                        <th class="px-4 py-2 w-10"><input id="trash-select-all" type="checkbox" /></th>
+                        <th class="px-4 py-2">File Name</th>
+                        <th class="px-4 py-2">Type</th>
+                        <th class="px-4 py-2">Date Deleted</th>
+                        <th class="px-4 py-2">Expires In</th>
+                        <th class="px-4 py-2">Size</th>
+                        <th class="px-4 py-2">Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody id="trash-tbody" class="divide-y divide-slate-100 bg-white"></tbody>
+                  </table>
+                </div>
+              </div>
+            </section>
+
+          </div>
+        </main>
+      </div>
+    </div>
+
+    <!-- Toasts -->
+    <div aria-live="polite" aria-atomic="true" class="pointer-events-none fixed inset-0 z-[100] flex items-end sm:items-start px-4 py-6">
+      <div id="toast-stack" class="flex w-full flex-col items-center space-y-3 sm:items-end"></div>
+    </div>
+
+    <!-- Simple Modal for file info -->
+    <div id="modal" class="fixed inset-0 z-[90] hidden">
+      <div class="absolute inset-0 bg-slate-900/30"></div>
+      <div class="absolute inset-x-0 top-20 mx-auto w-full max-w-lg">
+        <div class="rounded-2xl border border-slate-200 bg-white p-5 shadow-2xl">
+          <div class="flex items-start justify-between">
+            <div class="font-semibold" id="modal-title">File Info</div>
+            <button id="modal-close" class="rounded-lg p-1 hover:bg-slate-50">✖️</button>
+          </div>
+          <div id="modal-body" class="mt-3 text-sm text-slate-700"></div>
+          <div class="mt-5 flex items-center justify-end gap-2">
+            <button id="modal-ok" class="rounded-lg bg-brand-600 px-3 py-2 text-white hover:bg-brand-700">OK</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script src="app.js"></script>
+  </body>
+  </html>
+
